@@ -1,3 +1,3 @@
 name = "comlib"
 
-from lib import BackyardCom
+from comlib.lib import BackyardCom
