@@ -1,4 +1,5 @@
 import os
+import json
 import requests
 
 
@@ -15,19 +16,33 @@ class StatusFailed(Exception):
 class BackyardCom:
     __id = ""
     __base_url = None
+    __config = None
 
-    def __init__(self, id):
-        self.__id = id
+    def __init__(self):
+        self.__id = os.environ.get('JOB_ID')
+        if self.__id == None:
+            raise Unconfigured('No JOB_ID environment variable found!')
 
         status_url = os.environ.get('STATUS_URL')
         if status_url == None:
             raise Unconfigured('No STATUS_URL environment variable found!')
         
+        config = os.environ.get('PARAMETER')
+        if config == None:
+            raise Unconfigured('No PARAMETER environment variable found!')
+
+        self.__config = json.loads(config)
+        
         self.__base_url = os.path.join(status_url, self.__id)
-        self.status(0, 'initializing')
+        res = requests.post(self.__base_url, data = {'progress': 0, 'message': 'initializing'})
+        if res.status_code != 200:
+            raise StatusFailed('Failed to update status: %s [%d]' % (res.status_code, res.text))
+
+    def get(self, key):
+        return __config[key] or None
 
     def status(self, progress, message=""):
-        res = requests.patch(self.__base_url, data = {'id': self.__id, 'progress': progress, 'message': message})
+        res = requests.patch(self.__base_url, data = {'progress': progress, 'message': message})
         if res.status_code != 200:
             raise StatusFailed('Failed to update status: %s [%d]' % (res.status_code, res.text))
 
@@ -35,9 +50,6 @@ class BackyardCom:
         self.status(100, 'uploading')
 
         files = {'file': ('result.json', open(filename, 'rb'), 'application/json', {'Expires': '0'})}
-        res = requests.post(self.__base_url, files=files)
+        res = requests.post(os.path.join(self.__base_url, 'result'), files=files)
         if res.status_code != 200:
             raise StatusFailed('Failed to upload result: %s [%d]' % (res.status_code, res.text))
-
-        self.status(100, 'done')
-
