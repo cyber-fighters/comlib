@@ -34,7 +34,7 @@ class BackyardCom:
         self.__config = json.loads(config)
         
         self.__base_url = os.path.join(status_url, self.__id)
-        res = requests.post(self.__base_url, data = {'progress': 0, 'message': 'initializing'})
+        res = requests.patch(self.__base_url, data = {'progress': 0, 'message': 'initializing'})
         if res.status_code != 200:
             raise StatusFailed('Failed to update status: %d [%s]' % (res.status_code, res.text))
 
