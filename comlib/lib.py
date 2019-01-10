@@ -36,7 +36,7 @@ class BackyardCom:
         self.__base_url = os.path.join(status_url, self.__id)
         res = requests.post(self.__base_url, data = {'progress': 0, 'message': 'initializing'})
         if res.status_code != 200:
-            raise StatusFailed('Failed to update status: %s [%d]' % (res.status_code, res.text))
+            raise StatusFailed('Failed to update status: %d [%s]' % (res.status_code, res.text))
 
     def get(self, key):
         return __config[key] or None
@@ -44,7 +44,7 @@ class BackyardCom:
     def status(self, progress, message=""):
         res = requests.patch(self.__base_url, data = {'progress': progress, 'message': message})
         if res.status_code != 200:
-            raise StatusFailed('Failed to update status: %s [%d]' % (res.status_code, res.text))
+            raise StatusFailed('Failed to update status: %d [%s]' % (res.status_code, res.text))
 
     def done(self, filename):
         self.status(100, 'uploading')
@@ -52,4 +52,4 @@ class BackyardCom:
         files = {'file': ('result.json', open(filename, 'rb'), 'application/json', {'Expires': '0'})}
         res = requests.post(os.path.join(self.__base_url, 'result'), files=files)
         if res.status_code != 200:
-            raise StatusFailed('Failed to upload result: %s [%d]' % (res.status_code, res.text))
+            raise StatusFailed('Failed to upload result: %d [%s]' % (res.status_code, res.text))
