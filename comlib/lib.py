@@ -69,7 +69,7 @@ class BackyardCom:
             raise DownloadFailed('Failed to download: %d [%s]' % (res.status_code, res.text))
         tmp = tempfile.NamedTemporaryFile(delete=False)
         with tmp as f:
-            for chunk in res.iter_content(chunk_size=1024)
+            for chunk in res.iter_content(chunk_size=1024):
                 f.write(chunk)
         return tmp.name
 
