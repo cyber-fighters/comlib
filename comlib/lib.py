@@ -1,6 +1,21 @@
 import os
 import json
 import requests
+import tempfile
+
+class ModuleNotFound(Exception):
+    """Inidicate that no such module is found."""
+    pass
+
+
+class ModuleNotReady(Exception):
+    """Inidicate that module was not completed yet."""
+    pass
+
+
+class DownloadFailed(Exception):
+    """Inidicate that the download of module results failed."""
+    pass
 
 
 class Unconfigured(Exception):
@@ -31,12 +46,32 @@ class BackyardCom:
         if config == None:
             raise Unconfigured('No PARAMETER environment variable found!')
 
+        moduleInfoStr = os.environ.get('MODULE_RESULTS')
+        if self.__moduleInfo == None:
+            raise Unconfigured('No PARAMETER environment variable found!')
+
+        self.__moduleInfo = json.loads(moduleInfoStr)
         self.__config = json.loads(config)
         
         self.__base_url = os.path.join(status_url, self.__id)
         res = requests.patch(self.__base_url, data = {'progress': 0, 'message': 'initializing'})
         if res.status_code != 200:
             raise StatusFailed('Failed to update status: %d [%s]' % (res.status_code, res.text))
+
+    def downloadModuleResultFile(moduleName):
+        module = self.__moduleInfo.get(moduleName)
+        if module == None:
+            raise ModuleNotFound('Failed to find module %s' % moduleName)
+        if module['status'] != 'COMPLETED':
+            raise ModuleNotReady('Failed to find result for module %s' % moduleName)
+        res = requests.get(module['result'])
+        if res.status_code != 200:
+            raise DownloadFailed('Failed to download: %d [%s]' % (res.status_code, res.text))
+        tmp = tempfile.NamedTemporaryFile(delete=False)
+        with tmp as f:
+            for chunk in res.iter_content(chunk_size=1024)
+                f.write(chunk)
+        return tmp.name
 
     def get(self, key):
         return __config[key] or None
