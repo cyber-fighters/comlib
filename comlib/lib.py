@@ -4,27 +4,27 @@ import requests
 import tempfile
 
 class ModuleNotFound(Exception):
-    """Inidicate that no such module is found."""
+    """Indicate that no such module is found."""
     pass
 
 
 class ModuleNotReady(Exception):
-    """Inidicate that module was not completed yet."""
+    """Indicate that module was not completed yet."""
     pass
 
 
 class DownloadFailed(Exception):
-    """Inidicate that the download of module results failed."""
+    """Indicate that the download of module results failed."""
     pass
 
 
 class Unconfigured(Exception):
-    """Inidicate that the communication is unconfigured."""
+    """Indicate that the communication is unconfigured."""
     pass
 
 
 class StatusFailed(Exception):
-    """Inidicate that the status communication failed."""
+    """Indicate that the status communication failed."""
     pass
 
 
@@ -48,7 +48,7 @@ class BackyardCom:
 
         moduleInfoStr = os.environ.get('MODULE_RESULTS')
         if self.__moduleInfo == None:
-            raise Unconfigured('No PARAMETER environment variable found!')
+            raise Unconfigured('No MODULE_RESULTS environment variable found!')
 
         self.__moduleInfo = json.loads(moduleInfoStr)
         self.__config = json.loads(config)
