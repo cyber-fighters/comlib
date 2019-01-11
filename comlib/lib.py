@@ -47,7 +47,7 @@ class BackyardCom:
             raise Unconfigured('No PARAMETER environment variable found!')
 
         moduleInfoStr = os.environ.get('MODULE_RESULTS')
-        if self.__moduleInfo == None:
+        if moduleInfoStr == None:
             raise Unconfigured('No MODULE_RESULTS environment variable found!')
 
         self.__moduleInfo = json.loads(moduleInfoStr)
