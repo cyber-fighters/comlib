@@ -38,10 +38,10 @@ class BackyardCom:
         if self.__id == None:
             raise Unconfigured('No JOB_ID environment variable found!')
 
-        dependenciesStr = os.environ.get('DEPENDENCIES')
-        if dependenciesStr == None:
+        dependencies_str = os.environ.get('DEPENDENCIES')
+        if dependencies_str == None:
             raise Unconfigured('No DEPENDENCIES environment variable found!')
-        dependencies = json.loads(dependenciesStr)
+        dependencies = json.loads(dependencies_str)
 
         status_url = os.environ.get('STATUS_URL')
         if status_url == None:
@@ -51,11 +51,11 @@ class BackyardCom:
         if config == None:
             raise Unconfigured('No PARAMETER environment variable found!')
 
-        moduleInfoStr = os.environ.get('MODULE_RESULTS')
-        if moduleInfoStr == None:
+        module_info_str = os.environ.get('MODULE_RESULTS')
+        if module_info_str == None:
             raise Unconfigured('No MODULE_RESULTS environment variable found!')
 
-        self.__moduleInfo = json.loads(moduleInfoStr)
+        self.__moduleInfo = json.loads(module_info_str)
         self.__config = json.loads(config)
         
         self.__base_url = os.path.join(status_url, self.__id)
@@ -65,14 +65,14 @@ class BackyardCom:
 
         self.module_results = {}
         for dep in dependencies:
-            self.module_results[dep] = self.downloadModuleResultFile(dep)
+            self.module_results[dep] = self.download_module_result_file(dep)
 
-    def downloadModuleResultFile(moduleName):
-        module = self.__moduleInfo.get(moduleName)
+    def download_module_result_file(module_name):
+        module = self.__moduleInfo.get(module_name)
         if module == None:
-            raise ModuleNotFound('Failed to find module %s' % moduleName)
+            raise ModuleNotFound('Failed to find module %s' % module_name)
         if module['status'] != 'COMPLETED':
-            raise ModuleNotReady('Failed to find result for module %s' % moduleName)
+            raise ModuleNotReady('Failed to find result for module %s' % module_name)
         res = requests.get(module['result'])
         if res.status_code != 200:
             raise DownloadFailed('Failed to download: %d [%s]' % (res.status_code, res.text))
