@@ -38,6 +38,11 @@ class BackyardCom:
         if self.__id == None:
             raise Unconfigured('No JOB_ID environment variable found!')
 
+        dependenciesStr = os.environ.get('DEPENDENCIES')
+        if dependenciesStr == None:
+            raise Unconfigured('No DEPENDENCIES environment variable found!')
+        dependencies = json.loads(dependenciesStr)
+
         status_url = os.environ.get('STATUS_URL')
         if status_url == None:
             raise Unconfigured('No STATUS_URL environment variable found!')
@@ -57,6 +62,10 @@ class BackyardCom:
         res = requests.patch(self.__base_url, data = {'progress': 0, 'message': 'initializing'})
         if res.status_code != 200:
             raise StatusFailed('Failed to update status: %d [%s]' % (res.status_code, res.text))
+
+        self.module_results = {}
+        for dep in dependencies:
+            self.module_results[dep] = self.downloadModuleResultFile(dep)
 
     def downloadModuleResultFile(moduleName):
         module = self.__moduleInfo.get(moduleName)
