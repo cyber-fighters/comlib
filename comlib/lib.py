@@ -67,7 +67,7 @@ class BackyardCom:
         for dep in dependencies:
             self.module_results[dep] = self.download_module_result_file(dep)
 
-    def download_module_result_file(module_name):
+    def download_module_result_file(self, module_name):
         module = self.__moduleInfo.get(module_name)
         if module == None:
             raise ModuleNotFound('Failed to find module %s' % module_name)
