@@ -49,7 +49,7 @@ class BackyardCom:
         status_url = os.environ.get('STATUS_URL')
         if status_url == None:
             raise Unconfigured('No STATUS_URL environment variable found!')
-        
+
         config = os.environ.get('PARAMETER')
         if config == None:
             raise Unconfigured('No PARAMETER environment variable found!')
@@ -60,7 +60,7 @@ class BackyardCom:
 
         self.__moduleInfo = json.loads(module_info_str)
         self.__config = json.loads(config)
-        
+
         self.__base_url = os.path.join(status_url, self.__id)
         if not self.__debug:
             res = requests.patch(self.__base_url, data = {'progress': 0, 'message': 'initializing'})
@@ -88,6 +88,9 @@ class BackyardCom:
             for chunk in res.iter_content(chunk_size=1024):
                 f.write(chunk)
         return tmp.name
+
+    def get_unique_module_string(self):
+        return self.__id.replace("/", "_")
 
     def get(self, key):
         return self.__config[key] or None
