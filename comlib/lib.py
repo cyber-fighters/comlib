@@ -32,8 +32,11 @@ class BackyardCom:
     __id = ""
     __base_url = None
     __config = None
+    __debug = False
 
     def __init__(self):
+        self.__debug = bool(os.environ.get('DEBUG_MODE', False))
+
         self.__id = os.environ.get('JOB_ID')
         if self.__id == None:
             raise Unconfigured('No JOB_ID environment variable found!')
@@ -59,9 +62,10 @@ class BackyardCom:
         self.__config = json.loads(config)
         
         self.__base_url = os.path.join(status_url, self.__id)
-        res = requests.patch(self.__base_url, data = {'progress': 0, 'message': 'initializing'})
-        if res.status_code != 200:
-            raise StatusFailed('Failed to update status: %d [%s]' % (res.status_code, res.text))
+        if not self.__debug:
+            res = requests.patch(self.__base_url, data = {'progress': 0, 'message': 'initializing'})
+            if res.status_code != 200:
+                raise StatusFailed('Failed to update status: %d [%s]' % (res.status_code, res.text))
 
         self.module_results = {}
         for dep in dependencies:
@@ -73,7 +77,10 @@ class BackyardCom:
             raise ModuleNotFound('Failed to find module %s' % module_name)
         if module['status'] != 'COMPLETED':
             raise ModuleNotReady('Failed to find result for module %s' % module_name)
-        res = requests.get(module['result'])
+        resultRef = module['result']
+        if self.__debug:
+            return resultRef
+        res = requests.get(resultRef)
         if res.status_code != 200:
             raise DownloadFailed('Failed to download: %d [%s]' % (res.status_code, res.text))
         tmp = tempfile.NamedTemporaryFile(delete=False)
@@ -86,11 +93,15 @@ class BackyardCom:
         return __config[key] or None
 
     def status(self, progress, message=""):
+        if self.__debug:
+            return
         res = requests.patch(self.__base_url, data = {'progress': progress, 'message': message})
         if res.status_code != 200:
             raise StatusFailed('Failed to update status: %d [%s]' % (res.status_code, res.text))
 
     def done(self, filename):
+        if self.__debug:
+            return
         self.status(100, 'uploading')
 
         files = {'file': ('result.json', open(filename, 'rb'), 'application/json', {'Expires': '0'})}
