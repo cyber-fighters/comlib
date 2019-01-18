@@ -90,7 +90,7 @@ class BackyardCom:
         return tmp.name
 
     def get(self, key):
-        return __config[key] or None
+        return self.__config[key] or None
 
     def status(self, progress, message=""):
         if self.__debug:
