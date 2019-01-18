@@ -1,7 +1,9 @@
-import os
+"""Class for managing data exchange between pods."""
 import json
+import os
 import requests
 import tempfile
+
 
 class ModuleNotFound(Exception):
     """Indicate that no such module is found."""
@@ -35,6 +37,7 @@ class BackyardCom:
     __debug = False
 
     def __init__(self):
+        """Initialize the class instance."""
         self.__debug = bool(os.environ.get('DEBUG_MODE', False))
 
         self.__id = os.environ.get('JOB_ID')
@@ -72,6 +75,7 @@ class BackyardCom:
             self.module_results[dep] = self.download_module_result_file(dep)
 
     def download_module_result_file(self, module_name):
+        """Get the result file name and download it if necessary."""
         module = self.__moduleInfo.get(module_name)
         if module == None:
             raise ModuleNotFound('Failed to find module %s' % module_name)
@@ -90,12 +94,15 @@ class BackyardCom:
         return tmp.name
 
     def get_unique_module_string(self):
+        """Get a unique descriptor of this instance. Can be used for collision-free filenames."""
         return self.__id.replace("/", "_")
 
     def get(self, key):
+        """Get value from customer dictionary."""
         return self.__config[key] or None
 
     def status(self, progress, message=""):
+        """Post a job completion status."""
         if self.__debug:
             return
         res = requests.patch(self.__base_url, data = {'progress': progress, 'message': message})
@@ -103,6 +110,7 @@ class BackyardCom:
             raise StatusFailed('Failed to update status: %d [%s]' % (res.status_code, res.text))
 
     def done(self, filename):
+        """Finish up and register result file name for later modules."""
         if self.__debug:
             return
         self.status(100, 'uploading')
