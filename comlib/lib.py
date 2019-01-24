@@ -93,6 +93,10 @@ class BackyardCom:
                 f.write(chunk)
         return tmp.name
 
+    def is_debug():
+        """Return environmental variable for debug mode."""
+        return self.__debug
+
     def get_unique_module_string(self):
         """Get a unique descriptor of this instance. Can be used for collision-free filenames."""
         return self.__id.replace("/", "_")
