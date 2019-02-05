@@ -70,10 +70,6 @@ class BackyardCom:
             if res.status_code != 200:
                 raise StatusFailed('Failed to update status: %d [%s]' % (res.status_code, res.text))
 
-        self.module_results = {}
-        for dep in dependencies:
-            self.module_results[dep] = self.download_module_result_file(dep)
-
     def download_module_result_file(self, module_name):
         """Get the result file name and download it if necessary."""
         module = self.__moduleInfo.get(module_name)
