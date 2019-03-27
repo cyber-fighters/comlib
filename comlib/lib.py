@@ -31,6 +31,8 @@ class StatusFailed(Exception):
 
 
 class BackyardCom:
+    """Class for managing data exchange between pods."""
+
     __id = ""
     __base_url = None
     __config = None
@@ -41,24 +43,24 @@ class BackyardCom:
         self.__debug = bool(os.environ.get('DEBUG_MODE', False))
 
         self.__id = os.environ.get('JOB_ID')
-        if self.__id == None:
+        if self.__id is None:
             raise Unconfigured('No JOB_ID environment variable found!')
 
         dependencies_str = os.environ.get('DEPENDENCIES')
-        if dependencies_str == None:
+        if dependencies_str is None:
             raise Unconfigured('No DEPENDENCIES environment variable found!')
         dependencies = json.loads(dependencies_str)
 
         status_url = os.environ.get('STATUS_URL')
-        if status_url == None:
+        if status_url is None:
             raise Unconfigured('No STATUS_URL environment variable found!')
 
         config = os.environ.get('PARAMETER')
-        if config == None:
+        if config is None:
             raise Unconfigured('No PARAMETER environment variable found!')
 
         module_info_str = os.environ.get('MODULE_RESULTS')
-        if module_info_str == None:
+        if module_info_str is None:
             raise Unconfigured('No MODULE_RESULTS environment variable found!')
 
         self.__moduleInfo = json.loads(module_info_str)
@@ -66,7 +68,7 @@ class BackyardCom:
 
         self.__base_url = os.path.join(status_url, self.__id)
         if not self.__debug:
-            res = requests.patch(self.__base_url, data = {'progress': 0, 'message': 'initializing'})
+            res = requests.patch(self.__base_url, data={'progress': 0, 'message': 'initializing'})
             if res.status_code != 200:
                 raise StatusFailed('Failed to update status: %d [%s]' % (res.status_code, res.text))
 
@@ -77,14 +79,14 @@ class BackyardCom:
     def download_module_result_file(self, module_name):
         """Get the result file name and download it if necessary."""
         module = self.__moduleInfo.get(module_name)
-        if module == None:
+        if module is None:
             raise ModuleNotFound('Failed to find module %s' % module_name)
         if module['status'] != 'COMPLETED':
             raise ModuleNotReady('Failed to find result for module %s' % module_name)
-        resultRef = module['result']
+        result_ref = module['result']
         if self.__debug:
-            return resultRef
-        res = requests.get(resultRef)
+            return result_ref
+        res = requests.get(result_ref)
         if res.status_code != 200:
             raise DownloadFailed('Failed to download: %d [%s]' % (res.status_code, res.text))
         tmp = tempfile.NamedTemporaryFile(delete=False)
@@ -93,7 +95,7 @@ class BackyardCom:
                 f.write(chunk)
         return tmp.name
 
-    def is_debug():
+    def is_debug(self):
         """Return environmental variable for debug mode."""
         return self.__debug
 
@@ -109,7 +111,7 @@ class BackyardCom:
         """Post a job completion status."""
         if self.__debug:
             return
-        res = requests.patch(self.__base_url, data = {'progress': progress, 'message': message})
+        res = requests.patch(self.__base_url, data={'progress': progress, 'message': message})
         if res.status_code != 200:
             raise StatusFailed('Failed to update status: %d [%s]' % (res.status_code, res.text))
 
