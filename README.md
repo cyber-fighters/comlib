@@ -1,3 +1,4 @@
+# WARNING: DISCONTINUED
 # Backyard Comlib
 
 Module to manage data exchange of the pods.
